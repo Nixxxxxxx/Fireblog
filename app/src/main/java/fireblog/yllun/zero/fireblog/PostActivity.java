@@ -15,6 +15,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -30,14 +32,18 @@ public class PostActivity extends AppCompatActivity {
 
     private static final int  GALERY_REQUEST = 1;
     private StorageReference mStorage;
+    private DatabaseReference mDatabaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
 
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Blog");
         mStorage = FirebaseStorage.getInstance().getReference();
+
         mProgressDialog = new ProgressDialog(this);
+
 
         mSelectImage = (ImageButton) findViewById(R.id.imageButton);
 
@@ -67,8 +73,8 @@ public class PostActivity extends AppCompatActivity {
     private void startPosting(){
         mProgressDialog.setMessage("Posting to blog");
         mProgressDialog.show();
-        String title = mPostTitle.getText().toString().trim();
-        String message = mPostMesage.getText().toString().trim();
+        final String title = mPostTitle.getText().toString().trim();
+        final String message = mPostMesage.getText().toString().trim();
         if(!TextUtils.isEmpty(title) && !TextUtils.isEmpty(message) && mImageUri != null){
 
             StorageReference filepath = mStorage.child("Blog_Image").child(mImageUri.getLastPathSegment());
@@ -76,6 +82,11 @@ public class PostActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    DatabaseReference newPost = mDatabaseReference.push();
+                    newPost.child("title").setValue(title);
+                    newPost.child("message").setValue(message);
+                    newPost.child("image").setValue(downloadUrl.toString());
+
                     mProgressDialog.dismiss();
                 }
             });
