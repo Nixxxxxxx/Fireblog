@@ -71,12 +71,12 @@ public class PostActivity extends AppCompatActivity {
 
 
     private void startPosting(){
-        mProgressDialog.setMessage("Posting to blog");
-        mProgressDialog.show();
+
         final String title = mPostTitle.getText().toString().trim();
         final String message = mPostMesage.getText().toString().trim();
         if(!TextUtils.isEmpty(title) && !TextUtils.isEmpty(message) && mImageUri != null){
-
+            mProgressDialog.setMessage("Posting to blog");
+            mProgressDialog.show();
             StorageReference filepath = mStorage.child("Blog_Image").child(mImageUri.getLastPathSegment());
             filepath.putFile(mImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
@@ -88,6 +88,8 @@ public class PostActivity extends AppCompatActivity {
                     newPost.child("image").setValue(downloadUrl.toString());
 
                     mProgressDialog.dismiss();
+
+                    startActivity(new Intent(PostActivity.this,MainActivity.class));
                 }
             });
         }
